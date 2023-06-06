@@ -21,9 +21,10 @@ spark = SparkSession.\
 df = spark \
   .readStream \
   .format("kafka") \
-  .option("startingOffsets", "latest") \   # earliest in case of earlier data
-  .option("kafka.bootstrap.servers", "localhost:9092") \
+  .option("kafka.bootstrap.servers", "broker:29092") \
   .option("subscribe", "test") \
+  .option("startingOffsets", "earliest") \
+  .option("maxOffsetsPerTrigger", 1000) \
   .load()
   
 
@@ -52,17 +53,23 @@ testDF=df.selectExpr("CAST(value AS STRING)")
 #Sets the collection to "test".
 #Sets the trigger to "continuous".
 #Sets the output mode to "append".
-#Starts the stream.	
+#Starts the stream
+
+
 dsw = (
   testDF.writeStream \
     .format("mongodb") \
     .queryName("ToMDB") \
 	.option("checkpointLocation", "/tmp/pyspark3/") \
-    .option('spark.mongodb.connection.uri', 'mongodb://localhost:27017/') \
+    .option('spark.mongodb.connection.uri', 'mongodb://mongodb:27017/') \
     .option('spark.mongodb.database', 'myDb') \
     .option('spark.mongodb.collection', 'test') \
     .trigger(continuous="10 seconds") \
     .outputMode("append") \
     .start().awaitTermination());
-	
-	
+'''
+query = df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)") \
+    .writeStream \
+    .format("console") \
+    .start()
+'''	

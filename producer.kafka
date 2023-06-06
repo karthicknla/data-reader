@@ -1,0 +1,13 @@
+PRODUCER keyed-message
+topic: my-topic
+key: mykeyq
+headers: header1=value1, header2=value2
+record content
+
+###
+
+PRODUCER non-keyed-json-message
+topic: test
+{
+    "type": "consumer test 3"
+}
